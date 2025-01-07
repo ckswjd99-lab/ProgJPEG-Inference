@@ -9,30 +9,41 @@ from torchvision.datasets.folder import ImageFolder, default_loader
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.data import create_transform
 
-# IMNET_DIR = '/data/ImageNet/imagenet1k'
-IMNET_DIR = '/data/imagenet'
+IMNET_DIR = '/data/ImageNet-1k'
 NUM_WORKERS = 16
 
 
-def get_imnet1k_dataloader(root=IMNET_DIR, batch_size=128, augmentation=False):
-    dataset_train, nb_classes = build_dataset(is_train=True, input_size=224, augmentation=augmentation)
-    dataset_val, _ = build_dataset(is_train=False, input_size=224, augmentation=False)
+def get_imnet1k_dataloader(root=IMNET_DIR, batch_size=128, augmentation=False, val_only=False):
+    if val_only:
+        dataset_val, _ = build_dataset(is_train=False, input_size=224, augmentation=False)
 
-    train_loader = torch.utils.data.DataLoader(
-        dataset_train, 
-        batch_size=batch_size,
-        num_workers=NUM_WORKERS,
-        pin_memory=True,
-        drop_last=True,
-    )
+        val_loader = torch.utils.data.DataLoader(
+            dataset_val, batch_size=batch_size,
+            shuffle=False, num_workers=NUM_WORKERS,
+            pin_memory=True, drop_last=False
+        )
 
-    val_loader = torch.utils.data.DataLoader(
-        dataset_val, batch_size=batch_size,
-        shuffle=False, num_workers=NUM_WORKERS,
-        pin_memory=True, drop_last=False
-    )
+        return None, val_loader
+    
+    else:
+        dataset_train, nb_classes = build_dataset(is_train=True, input_size=224, augmentation=augmentation)
+        dataset_val, _ = build_dataset(is_train=False, input_size=224, augmentation=False)
 
-    return train_loader, val_loader
+        train_loader = torch.utils.data.DataLoader(
+            dataset_train, 
+            batch_size=batch_size,
+            num_workers=NUM_WORKERS,
+            pin_memory=True,
+            drop_last=True,
+        )
+
+        val_loader = torch.utils.data.DataLoader(
+            dataset_val, batch_size=batch_size,
+            shuffle=False, num_workers=NUM_WORKERS,
+            pin_memory=True, drop_last=False
+        )
+
+        return train_loader, val_loader
 
 
 def build_dataset(is_train, input_size=224, augmentation=False):

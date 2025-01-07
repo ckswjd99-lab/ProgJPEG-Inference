@@ -7,10 +7,10 @@ from tqdm import tqdm
 from dataloader import get_imnet1k_dataloader
 
 BATCH_SIZE = 128
-IMNET_DIR = '/data/imagenet'
+IMNET_DIR = '/data/ImageNet-1k'
 
 
-train_loader, val_loader = get_imnet1k_dataloader(root=IMNET_DIR, batch_size=BATCH_SIZE, augmentation=False)
+_, val_loader = get_imnet1k_dataloader(root=IMNET_DIR, batch_size=BATCH_SIZE, augmentation=False, val_only=True)
 
 print("Loaded ImageNet-1k dataset")
 
@@ -22,7 +22,7 @@ model_vloss = []
 model_vacc = []
 model_nparams = []
 
-criterion = nn.CrossEntropyLoss().cuda()
+criterion = nn.CrossEntropyLoss()
 
 
 
@@ -37,7 +37,7 @@ def validate(test_loader, model, criterion):
     
     pbar = tqdm(test_loader, leave=False, total=len(test_loader))
     for data, target in pbar:
-        data, target = data.cuda(), target.cuda()
+        data, target = data, target
         output = model(data)
         loss = criterion(output, target)
         
@@ -57,7 +57,7 @@ def validate(test_loader, model, criterion):
 
 
 for mname in model_list:
-    model = timm.create_model(mname, pretrained=True, num_classes=1000).cuda()
+    model = timm.create_model(mname, pretrained=True, num_classes=1000)
     nparams = sum(p.numel() for p in model.parameters())
 
     val_loss, val_acc = validate(val_loader, model, criterion)
@@ -68,4 +68,3 @@ for mname in model_list:
     num_params = sum(p.numel() for p in model.parameters())
     model_nparams.append(num_params)
 
-    print(f'|  {mname:44s} ({nparams:11,d}) |  {val_loss:.4f}  |  {val_acc*100:.2f} %  |')
