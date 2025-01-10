@@ -145,7 +145,12 @@ if __name__ == "__main__":
     start_time = time.time()
     gaussian_pyramid, laplacian_pyramid = laplacian_pyramid_encode(image, levels)
     print(f"Creating Laplacian Pyramid: {time.time() - start_time:.4f} sec")
-    
+
+    # Directly create the lowest Gaussian layer
+    start_time = time.time()
+    for _ in range(levels):
+        image = cv2.pyrDown(image)
+    print(f"Creating Lowest Gaussian Layer: {time.time() - start_time:.4f} sec")
 
     # Save intermediate Laplacian layers
     total_compressed_size = 0
